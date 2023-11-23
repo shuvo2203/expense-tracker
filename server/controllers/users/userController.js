@@ -12,9 +12,31 @@ exports.createUser=async(req, res)=>{
         email,
         password : await bcrypt.hash(password, 10)
     });
+    const token = user.getToken();
     res.status(200).json({
         success:true,
-        user
+        user,
+        token
+    });
+}
+
+//login user
+exports.loginUser=async(req, res)=>{
+    const{email, password} = req.body;
+    const user = await User.findOne({email:email}).select("+password");
+    if(!user){
+        res.status(400).json('user not registered,please register first');
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if(!isMatch){
+        res.status(400).json('wrong password');
+    }
+    const token = user.getToken();
+    res.status(200).json({
+        success:true,
+        message:"login success...",
+        user,
+        token
     });
 }
 
